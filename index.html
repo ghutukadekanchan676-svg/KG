@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Scientific Medicine Database</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef5f9;
+    color:#17202a;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:15px;
+}
+
+.header{
+    background:linear-gradient(135deg,#00695c,#00897b);
+    color:white;
+    padding:25px 15px;
+    text-align:center;
+    border-radius:0 0 20px 20px;
+}
+
+.header h1{
+    margin:0 0 8px;
+    font-size:27px;
+}
+
+.header p{
+    margin:5px 0;
+    font-size:14px;
+}
+
+.search-box{
+    background:white;
+    margin:20px 0;
+    padding:15px;
+    border-radius:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,0.08);
+}
+
+.search-box input{
+    width:100%;
+    padding:14px;
+    border:2px solid #b0bec5;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+}
+
+.search-box input:focus{
+    border-color:#00897b;
+}
+
+.count{
+    margin:15px 0;
+    font-weight:bold;
+    color:#00695c;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    margin-bottom:16px;
+    padding:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,0.08);
+    border-left:5px solid #00897b;
+}
+
+.card h2{
+    margin:0 0 12px;
+    color:#00695c;
+    font-size:21px;
+}
+
+.info{
+    margin:10px 0;
+    line-height:1.6;
+}
+
+.label{
+    font-weight:bold;
+    color:#37474f;
+}
+
+.disease{
+    background:#e3f2fd;
+    padding:10px;
+    border-radius:8px;
+}
+
+.moa{
+    background:#e8f5e9;
+    padding:10px;
+    border-radius:8px;
+}
+
+.icd{
+    display:inline-block;
+    background:#fff3cd;
+    color:#795548;
+    padding:5px 9px;
+    border-radius:6px;
+    font-weight:bold;
+}
+
+.no-result{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
+    color:#c62828;
+    font-weight:bold;
+}
+
+.footer{
+    text-align:center;
+    padding:25px 10px;
+    color:#607d8b;
+    font-size:13px;
+}
+
+@media(max-width:600px){
+
+    .header h1{
+        font-size:22px;
+    }
+
+    .card{
+        padding:15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <h1>Scientific Medicine Database</h1>
+
+    <p>
+        Bioinformatics Based Scientific Medicine Information Database
+    </p>
+
+</div>
+
+
+<div class="container">
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search Medicine, Disease, MOA or ICD-10..."
+            oninput="searchMedicine()"
+        >
+
+    </div>
+
+
+    <div class="count" id="count"></div>
+
+    <div id="medicineList"></div>
+
+</div>
+
+
+<div class="footer">
+    © 2026 Scientific Medicine Database
+</div>
+
+
+<script>
+
+const medicineData = [
+
+{
+generic:"Paracetamol",
+brand:"Dolo 650 / Crocin / Calpol",
+disease:"Fever and acute pain",
+uses:"Fever and mild to moderate pain",
+moa:"Reduces prostaglandin production mainly in the central nervous system, producing analgesic and antipyretic effects.",
+sideEffects:"Nausea, stomach discomfort; overdose may cause liver damage",
+icd10:"R50.9"
+},
+
+{
+generic:"Azithromycin",
+brand:"Azithral / Zithromax",
+disease:"Certain bacterial infections",
+uses:"Certain bacterial infections",
+moa:"Binds to the 50S bacterial ribosomal subunit and inhibits bacterial protein synthesis.",
+sideEffects:"Nausea, diarrhea, abdominal discomfort",
+icd10:"A49.9"
+},
+
+{
+generic:"Amlodipine",
+brand:"Amlong / Norvasc",
+disease:"Hypertension and angina",
+uses:"High blood pressure and angina",
+moa:"Blocks L-type calcium channels in vascular smooth muscle, causing vasodilation and reduced blood pressure.",
+sideEffects:"Headache, dizziness, ankle swelling",
+icd10:"I10"
+},
+
+{
+generic:"Metformin",
+brand:"Glycomet / Gluformin",
+disease:"Type 2 Diabetes Mellitus",
+uses:"Type 2 diabetes",
+moa:"Reduces hepatic glucose production and improves insulin sensitivity.",
+sideEffects:"Nausea, diarrhea, abdominal discomfort",
+icd10:"E11.9"
+},
+
+{
+generic:"Pantoprazole",
+brand:"Pantop / Pantocid",
+disease:"Gastroesophageal reflux disease",
+uses:"Acidity and gastroesophageal reflux",
+moa:"Irreversibly inhibits the gastric H+/K+-ATPase proton pump and reduces stomach acid secretion.",
+sideEffects:"Headache, nausea, diarrhea",
+icd10:"K21.9"
+},
+
+{
+generic:"Cetirizine",
+brand:"Cetzine / Zyrtec",
+disease:"Allergic rhinitis",
+uses:"Allergy and allergic rhinitis",
+moa:"Blocks peripheral H1 histamine receptors and reduces allergic symptoms.",
+sideEffects:"Drowsiness, dry mouth",
+icd10:"J30.9"
+},
+
+{
+generic:"Ibuprofen",
+brand:"Brufen / Ibugesic",
+disease:"Pain and inflammation",
+uses:"Pain and inflammation",
+moa:"Inhibits COX enzymes and reduces prostaglandin synthesis, lowering pain and inflammation.",
+sideEffects:"Stomach irritation, nausea",
+icd10:"R52"
+},
+
+{
+generic:"Amoxicillin",
+brand:"Mox / Novamox",
+disease:"Certain bacterial infections",
+uses:"Certain bacterial infections",
+moa:"Inhibits bacterial cell-wall synthesis by binding to penicillin-binding proteins.",
+sideEffects:"Diarrhea, nausea, skin rash",
+icd10:"A49.9"
+},
+
+{
+generic:"Telmisartan",
+brand:"Telmikind / Telma",
+disease:"Hypertension",
+uses:"High blood pressure",
+moa:"Blocks angiotensin II AT1 receptors, causing vasodilation and reduced blood pressure.",
+sideEffects:"Dizziness, headache",
+icd10:"I10"
+},
+
+{
+generic:"Atorvastatin",
+brand:"Atorva / Lipitor",
+disease:"Hypercholesterolemia",
+uses:"High cholesterol",
+moa:"Inhibits HMG-CoA reductase, reducing hepatic cholesterol synthesis.",
+sideEffects:"Muscle pain, nausea",
+icd10:"E78.0"
+},
+
+{
+generic:"Dextromethorphan",
+brand:"Benadryl DR / Ascoril-D",
+disease:"Dry cough",
+uses:"Dry cough",
+moa:"Suppresses the cough reflex through action on the medullary cough center.",
+sideEffects:"Drowsiness, dizziness",
+icd10:"R05"
+},
+
+{
+generic:"Levocetirizine",
+brand:"Levocet / Xyzal",
+disease:"Allergic rhinitis",
+uses:"Allergic conditions",
+moa:"Blocks peripheral H1 histamine receptors and reduces allergic responses.",
+sideEffects:"Drowsiness, dry mouth",
+icd10:"J30.9"
+},
+
+{
+generic:"Ondansetron",
+brand:"Ondem / Zofran",
+disease:"Nausea and vomiting",
+uses:"Nausea and vomiting",
+moa:"Blocks 5-HT3 serotonin receptors involved in nausea and vomiting.",
+sideEffects:"Headache, constipation",
+icd10:"R11"
+},
+
+{
+generic:"Lactulose",
+brand:"Duphalac / Looz",
+disease:"Constipation",
+uses:"Constipation",
+moa:"Reaches the colon and increases water content in the stool, making it softer.",
+sideEffects:"Gas, bloating, diarrhea",
+icd10:"K59.0"
+},
+
+{
+generic:"Antacid",
+brand:"Digene / Gelusil",
+disease:"Heartburn and acid indigestion",
+uses:"Acidity and heartburn",
+moa:"Neutralizes or buffers gastric acid and increases gastric pH.",
+sideEffects:"Constipation or diarrhea",
+icd10:"R12"
+},
+
+{
+generic:"Amoxicillin + Clavulanic Acid",
+brand:"Augmentin / Clavam",
+disease:"Certain bacterial infections",
+uses:"Certain bacterial infections",
+moa:"Amoxicillin inhibits bacterial cell-wall synthesis while clavulanic acid inhibits certain beta-lactamases.",
+sideEffects:"Diarrhea, nausea, skin rash",
+icd10:"J02.9"
+},
+
+{
+generic:"Cefixime",
+brand:"Zifi / Cefix",
+disease:"Certain bacterial infections",
+uses:"Certain bacterial infections",
+moa:"Binds to penicillin-binding proteins and inhibits bacterial cell-wall synthesis.",
+sideEffects:"Diarrhea, nausea",
+icd10:"A49.9"
+},
+
+{
+generic:"Nitrofurantoin",
+brand:"Niftas / Macrobid",
+disease:"Urinary tract infection",
+uses:"Urinary tract infections",
+moa:"Is converted into reactive intermediates that damage bacterial DNA and proteins.",
+sideEffects:"Nausea, headache",
+icd10:"N39.0"
+},
+
+{
+generic:"Bisacodyl",
+brand:"Dulcolax",
+disease:"Constipation",
+uses:"Constipation",
+moa:"Stimulates colonic nerve endings and promotes intestinal motility and fluid secretion.",
+sideEffects:"Abdominal cramps, diarrhea",
+icd10:"K59.0"
+},
+
+{
+generic:"Domperidone",
+brand:"Domstal / Domperon",
+disease:"Nausea and upper gastrointestinal symptoms",
+uses:"Nausea and certain digestive symptoms",
+moa:"Blocks peripheral dopamine D2 receptors and improves upper gastrointestinal motility.",
+sideEffects:"Dry mouth, headache",
+icd10:"K30"
+},
+
+{
+generic:"Glimepiride",
+brand:"Amaryl / Glimisave",
+disease:"Type 2 Diabetes Mellitus",
+uses:"Type 2 diabetes",
+moa:"Stimulates pancreatic beta cells to release insulin.",
+sideEffects:"Low blood sugar, dizziness",
+icd10:"E11.9"
+},
+
+{
+generic:"Losartan",
+brand:"Losar / Cozaar",
+disease:"Hypertension",
+uses:"High blood pressure",
+moa:"Blocks angiotensin II AT1 receptors and reduces vasoconstriction.",
+sideEffects:"Dizziness, headache",
+icd10:"I10"
+},
+
+{
+generic:"Enalapril",
+brand:"Envas / Renitec",
+disease:"Hypertension and heart failure",
+uses:"High blood pressure and heart failure",
+moa:"Inhibits ACE, reducing formation of angiotensin II and lowering blood pressure.",
+sideEffects:"Dry cough, dizziness",
+icd10:"I10"
+},
+
+{
+generic:"Atenolol",
+brand:"Aten / Tenormin",
+disease:"Hypertension and certain cardiac conditions",
+uses:"High blood pressure and certain heart conditions",
+moa:"Selectively blocks beta-1 adrenergic receptors, reducing heart rate and cardiac workload.",
+sideEffects:"Slow heart rate, fatigue",
+icd10:"I10"
+},
+
+{
+generic:"Isosorbide Mononitrate",
+brand:"Monotrate / Imdur",
+disease:"Angina pectoris",
+uses:"Prevention of angina",
+moa:"Releases nitric oxide, increasing cGMP and relaxing vascular smooth muscle.",
+sideEffects:"Headache, dizziness",
+icd10:"I20.9"
+},
+
+{
+generic:"Rabeprazole",
+brand:"Rabesec / Razo",
+disease:"Gastroesophageal reflux disease",
+uses:"Acidity and acid reflux",
+moa:"Irreversibly inhibits the gastric proton pump and reduces acid secretion.",
+sideEffects:"Headache, nausea",
+icd10:"K21.9"
+},
+
+{
+generic:"Omeprazole",
+brand:"Omez / Losec",
+disease:"Gastroesophageal reflux disease",
+uses:"Acidity and acid reflux",
+moa:"Inhibits the gastric H+/K+-ATPase proton pump and reduces acid secretion.",
+sideEffects:"Headache, abdominal discomfort",
+icd10:"K21.9"
+},
+
+{
+generic:"Diclofenac",
+brand:"Voveran / Diclogesic",
+disease:"Musculoskeletal pain and inflammation",
+uses:"Pain and inflammation",
+moa:"Inhibits COX enzymes and reduces prostaglandin synthesis.",
+sideEffects:"Stomach irritation, nausea",
+icd10:"M54.5"
+},
+
+{
+generic:"Naproxen",
+brand:"Naprosyn / Napra",
+disease:"Pain and inflammation",
+uses:"Pain and inflammation",
+moa:"Inhibits COX enzymes and reduces prostaglandin production.",
+sideEffects:"Stomach upset, nausea",
+icd10:"M54.5"
+},
+
+{
+generic:"Salbutamol",
+brand:"Asthalin / Ventolin",
+disease:"Asthma with bronchospasm",
+uses:"Relief of bronchospasm in asthma",
+moa:"Selective beta-2 agonist that relaxes bronchial smooth muscle.",
+sideEffects:"Tremor, fast heartbeat",
+icd10:"J45.9"
+},
+
+{
+generic:"Montelukast",
+brand:"Montair / Singulair",
+disease:"Asthma and allergic rhinitis",
+uses:"Asthma and allergic rhinitis",
+moa:"Blocks cysteinyl leukotriene CysLT1 receptors in the airways.",
+sideEffects:"Headache, abdominal pain",
+icd10:"J45.9"
+},
+
+{
+generic:"Ambroxol",
+brand:"Mucosolvan / Ambrodil",
+disease:"Productive cough",
+uses:"Productive cough with mucus",
+moa:"Mucolytic that reduces mucus viscosity and improves mucociliary clearance.",
+sideEffects:"Nausea, stomach discomfort",
+icd10:"J06.9"
+},
+
+{
+generic:"Guaifenesin",
+brand:"Robitussin / Mucinex",
+disease:"Chest congestion",
+uses:"Chest congestion with mucus",
+moa:"Increases respiratory tract fluid and helps loosen mucus.",
+sideEffects:"Nausea, dizziness",
+icd10:"R05"
+},
+
+{
+generic:"Fluconazole",
+brand:"Fluka / Diflucan",
+disease:"Fungal infection",
+uses:"Certain fungal infections",
+moa:"Inhibits fungal CYP450-dependent ergosterol synthesis.",
+sideEffects:"Nausea, abdominal pain",
+icd10:"B37.9"
+},
+
+{
+generic:"Clotrimazole",
+brand:"Candid / Canesten",
+disease:"Fungal skin infection",
+uses:"Fungal skin infections",
+moa:"Inhibits fungal ergosterol synthesis by blocking 14-alpha-demethylase.",
+sideEffects:"Local irritation, itching",
+icd10:"B35.9"
+},
+
+{
+generic:"Hydrocortisone",
+brand:"Cortaid / Hydrocort",
+disease:"Inflammatory skin conditions",
+uses:"Certain inflammatory skin conditions",
+moa:"Activates glucocorticoid receptors and reduces inflammatory mediator production.",
+sideEffects:"Skin irritation, thinning with prolonged use",
+icd10:"L20.9"
+},
+
+{
+generic:"Calamine",
+brand:"Caladryl / Calamine Lotion",
+disease:"Itching and minor skin irritation",
+uses:"Itching and minor skin irritation",
+moa:"Provides a protective and soothing effect on irritated skin and reduces local itching.",
+sideEffects:"Skin dryness or irritation",
+icd10:"L30.9"
+},
+
+{
+generic:"Ferrous Sulfate",
+brand:"Autrin / Fefol",
+disease:"Iron deficiency anemia",
+uses:"Iron deficiency anemia",
+moa:"Provides elemental iron required for hemoglobin and other iron-containing proteins.",
+sideEffects:"Constipation, nausea, dark stools",
+icd10:"D50.9"
+},
+
+{
+generic:"Vitamin B12",
+brand:"Methylcobal / Neurobion",
+disease:"Vitamin B12 deficiency",
+uses:"Vitamin B12 deficiency",
+moa:"Acts as a cofactor for DNA synthesis and normal red blood cell and nerve function.",
+sideEffects:"Mild nausea, headache",
+icd10:"D51.9"
+},
+
+{
+generic:"Vitamin D3",
+brand:"Uprise-D3 / Calcirol",
+disease:"Vitamin D deficiency",
+uses:"Vitamin D deficiency",
+moa:"Increases intestinal calcium and phosphate absorption and supports bone mineralization.",
+sideEffects:"Nausea or high calcium levels with excessive use",
+icd10:"E55.9"
+},
+
+{
+generic:"Calcium Carbonate",
+brand:"Shelcal / Calcimax",
+disease:"Calcium deficiency",
+uses:"Calcium deficiency and bone health",
+moa:"Provides calcium required for bone mineralization and physiological functions.",
+sideEffects:"Constipation, bloating",
+icd10:"E55.9"
+},
+
+{
+generic:"Chlorpheniramine",
+brand:"Avil / Chlor-Trimeton",
+disease:"Allergic rhinitis and cold symptoms",
+uses:"Allergic symptoms and common cold symptoms",
+moa:"Blocks H1 histamine receptors and reduces allergic symptoms.",
+sideEffects:"Drowsiness, dry mouth",
+icd10:"J00"
+},
+
+{
+generic:"ORS",
+brand:"Electral / ORSL",
+disease:"Dehydration due to fluid loss",
+uses:"Prevention and treatment of dehydration",
+moa:"Uses glucose-sodium co-transport in the intestine to enhance absorption of water and electrolytes.",
+sideEffects:"Usually well tolerated when prepared correctly",
+icd10:"A09"
+},
+
+{
+generic:"Prochlorperazine",
+brand:"Stemetil",
+disease:"Nausea, vomiting and vertigo",
+uses:"Nausea, vomiting and vertigo",
+moa:"Blocks dopamine D2 receptors in the vomiting center and chemoreceptor trigger zone.",
+sideEffects:"Drowsiness, dizziness, movement-related effects",
+icd10:"R11"
+},
+
+{
+generic:"Sumatriptan",
+brand:"Suminat / Imitrex",
+disease:"Migraine",
+uses:"Acute migraine attacks",
+moa:"Agonist at 5-HT1B/1D receptors that reduces trigeminal signaling and causes cranial vasoconstriction.",
+sideEffects:"Dizziness, tingling, flushing",
+icd10:"G43.9"
+},
+
+{
+generic:"Melatonin",
+brand:"Meloset / Melatonin",
+disease:"Sleep-wake cycle disturbance",
+uses:"Sleep-wake cycle disturbances",
+moa:"Activates MT1 and MT2 receptors involved in regulation of the sleep-wake cycle.",
+sideEffects:"Drowsiness, headache",
+icd10:"F51.0"
+},
+
+{
+generic:"Mupirocin",
+brand:"T-Bact / Bactroban",
+disease:"Bacterial skin infection",
+uses:"Certain bacterial skin infections",
+moa:"Inhibits bacterial isoleucyl-tRNA synthetase and blocks protein synthesis.",
+sideEffects:"Local irritation, burning, itching",
+icd10:"L30.9"
+},
+
+{
+generic:"Moxifloxacin",
+brand:"Moxicip / Vigamox",
+disease:"Bacterial eye infection",
+uses:"Certain bacterial eye infections",
+moa:"Inhibits bacterial DNA gyrase and topoisomerase IV.",
+sideEffects:"Eye irritation, dryness",
+icd10:"H10.9"
+},
+
+{
+generic:"Timolol",
+brand:"Timoptol",
+disease:"Glaucoma and ocular hypertension",
+uses:"Glaucoma and ocular hypertension",
+moa:"Non-selective beta-adrenergic blocker that reduces aqueous humor production.",
+sideEffects:"Eye irritation, slow heart rate",
+icd10:"H10.9"
+},
+
+{
+generic:"Acyclovir",
+brand:"Zovirax / Acivir",
+disease:"Herpes virus infection",
+uses:"Herpes virus infections",
+moa:"After activation by viral thymidine kinase, inhibits viral DNA polymerase.",
+sideEffects:"Nausea, headache, local irritation",
+icd10:"B00.9"
+}
+
+];
+
+
+/* SEARCH */
+
+function searchMedicine(){
+
+    const searchText =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const filtered = medicineData.filter(function(medicine){
+
+        const text = (
+
+            medicine.generic + " " +
+            medicine.brand + " " +
+            medicine.disease + " " +
+            medicine.uses + " " +
+            medicine.moa + " " +
+            medicine.sideEffects + " " +
+            medicine.icd10
+
+        ).toLowerCase();
+
+        return text.includes(searchText);
+
+    });
+
+    renderMedicines(filtered);
+}
+
+
+/* DISPLAY */
+
+function renderMedicines(data){
+
+    const list =
+        document.getElementById("medicineList");
+
+    const count =
+        document.getElementById("count");
+
+    count.textContent =
+        data.length + " Medicines Found";
+
+    list.innerHTML = "";
+
+    if(data.length === 0){
+
+        list.innerHTML = `
+            <div class="no-result">
+                No medicine found
+            </div>
+        `;
+
+        return;
+    }
+
+    data.forEach(function(medicine){
+
+        const card =
+            document.createElement("div");
+
+        card.className = "card";
+
+        card.innerHTML = `
+
+            <h2>${medicine.generic}</h2>
+
+            <div class="info">
+                <span class="label">
+                    Brand Name:
+                </span>
+                ${medicine.brand}
+            </div>
+
+            <div class="info disease">
+                <span class="label">
+                    Associated Disease:
+                </span>
+                ${medicine.disease}
+            </div>
+
+            <div class="info">
+                <span class="label">
+                    Uses:
+                </span>
+                ${medicine.uses}
+            </div>
+
+            <div class="info moa">
+                <span class="label">
+                    Mechanism of Action (MOA):
+                </span>
+                ${medicine.moa}
+            </div>
+
+            <div class="info">
+                <span class="label">
+                    Adverse Effects:
+                </span>
+                ${medicine.sideEffects}
+            </div>
+
+            <div class="info">
+                <span class="label">
+                    ICD-10:
+                </span>
+
+                <span class="icd">
+                    ${medicine.icd10}
+                </span>
+            </div>
+
+        `;
+
+        list.appendChild(card);
+
+    });
+}
+
+
+/* START */
+
+window.onload = function(){
+
+    renderMedicines(medicineData);
+
+};
+
+</script>
+
+</body>
+</html>
